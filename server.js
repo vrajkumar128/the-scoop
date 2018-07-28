@@ -2,7 +2,9 @@
 let database = {
   users: {},
   articles: {},
-  nextArticleId: 1
+  nextArticleId: 1,
+  comments: {},
+  nextCommentId: 1
 };
 
 const routes = {
@@ -26,6 +28,18 @@ const routes = {
   },
   '/articles/:id/downvote': {
     'PUT': downvoteArticle
+  },
+  '/comments': {
+    'POST': createComment
+  },
+  '/comments/:id': {
+
+  },
+  '/comments/:id/upvote': {
+
+  },
+  '/comments/:id/downvote': {
+
   }
 };
 
@@ -40,9 +54,9 @@ function getUser(url, request) {
     const userComments = user.commentIds.map(
         commentId => database.comments[commentId]);
     response.body = {
-      user: user,
-      userArticles: userArticles,
-      userComments: userComments
+      user,
+      userArticles,
+      userComments
     };
     response.status = 200;
   } else if (username) {
@@ -213,6 +227,40 @@ function downvoteArticle(url, request) {
 
     response.body = {article: savedArticle};
     response.status = 200;
+  } else {
+    response.status = 400;
+  }
+
+  return response;
+}
+
+function createComment(url, request) {
+  const requestComment = request.body && request.body.comment;
+  const response = {};
+
+  if (requestComment) {
+    const { body, username, articleId } = requestComment;
+
+    if (body && username && articleId
+      && database.users[username] && database.articles[articleId]) {
+      const comment = {
+        id: database.nextCommentId++,
+        body,
+        username,
+        articleId,
+        upvotedBy: [],
+        downvotedBy: []
+      };
+
+      database.comments[comment.id] = comment;
+      database.users[username].commentIds.push(comment.id);
+      database.articles[articleId].commentIds.push(comment.id);
+
+      response.body = { comment };
+      response.status = 201;
+    } else {
+      response.status = 400;
+    }
   } else {
     response.status = 400;
   }
