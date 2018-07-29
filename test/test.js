@@ -383,7 +383,7 @@ describe('Scoop - server.js: ', function() {
 
   });
 
-  describe('/commnets/:id/upvote PUT', function() {
+  describe('/comments/:id/upvote PUT', function() {
 
     beforeEach(function() {
       database.users['user'] = {

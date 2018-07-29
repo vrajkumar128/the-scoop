@@ -1,12 +1,16 @@
+const yaml = require('js-yaml');
+const fs = require('fs');
+
 // database is let instead of const to allow us to modify it in test.js
 let database = {
   users: {},
   articles: {},
-  nextArticleId: 1,
   comments: {},
+  nextArticleId: 1,
   nextCommentId: 1
 };
 
+// List of routes
 const routes = {
   '/users': {
     'POST': getOrCreateUser
@@ -44,6 +48,7 @@ const routes = {
   }
 };
 
+// Retrieve a user
 function getUser(url, request) {
   const username = url.split('/').filter(segment => segment)[1];
   const user = database.users[username];
@@ -69,6 +74,7 @@ function getUser(url, request) {
   return response;
 }
 
+// Retrieve or create a user
 function getOrCreateUser(url, request) {
   const username = request.body && request.body.username;
   const response = {};
@@ -93,6 +99,7 @@ function getOrCreateUser(url, request) {
   return response;
 }
 
+// Retrieve all articles
 function getArticles(url, request) {
   const response = {};
 
@@ -107,6 +114,7 @@ function getArticles(url, request) {
   return response;
 }
 
+// Retrieve a specific article
 function getArticle(url, request) {
   const id = Number(url.split('/').filter(segment => segment)[1]);
   const article = database.articles[id];
@@ -127,6 +135,7 @@ function getArticle(url, request) {
   return response;
 }
 
+// Create an article
 function createArticle(url, request) {
   const requestArticle = request.body && request.body.article;
   const response = {};
@@ -155,6 +164,7 @@ function createArticle(url, request) {
   return response;
 }
 
+// Update an article
 function updateArticle(url, request) {
   const id = Number(url.split('/').filter(segment => segment)[1]);
   const savedArticle = database.articles[id];
@@ -176,6 +186,7 @@ function updateArticle(url, request) {
   return response;
 }
 
+// Delete an article
 function deleteArticle(url, request) {
   const id = Number(url.split('/').filter(segment => segment)[1]);
   const savedArticle = database.articles[id];
@@ -199,6 +210,7 @@ function deleteArticle(url, request) {
   return response;
 }
 
+// Upvote an article
 function upvoteArticle(url, request) {
   const id = Number(url.split('/').filter(segment => segment)[1]);
   const username = request.body && request.body.username;
@@ -217,6 +229,7 @@ function upvoteArticle(url, request) {
   return response;
 }
 
+// Downvote an article
 function downvoteArticle(url, request) {
   const id = Number(url.split('/').filter(segment => segment)[1]);
   const username = request.body && request.body.username;
@@ -235,6 +248,7 @@ function downvoteArticle(url, request) {
   return response;
 }
 
+// Create a comment
 function createComment(url, request) {
   const requestComment = request.body && request.body.comment;
   const response = {};
@@ -261,8 +275,9 @@ function createComment(url, request) {
   }
 
   return response;
-};
+}
 
+// Update a comment
 function updateComment(url, request) {
   const id = Number(url.split('/').filter(segment => segment)[1]);
   const savedComment = database.comments[id];
@@ -283,6 +298,7 @@ function updateComment(url, request) {
   return response;
 }
 
+// Delete a comment
 function deleteComment(url, request) {
   const id = Number(url.split('/').filter(segment => segment)[1]);
   const savedComment = database.comments[id];
@@ -302,7 +318,7 @@ function deleteComment(url, request) {
   return response;
 }
 
-
+// Upvote a comment
 function upvoteComment(url, request) {
   const id = Number(url.split('/').filter(segment => segment)[1]);
   const username = request.body && request.body.username;
@@ -321,6 +337,7 @@ function upvoteComment(url, request) {
   return response;
 }
 
+// Downvote a comment
 function downvoteComment(url, request) {
   const id = Number(url.split('/').filter(segment => segment)[1]);
   const username = request.body && request.body.username;
@@ -339,6 +356,7 @@ function downvoteComment(url, request) {
   return response;
 }
 
+// Upvote an item
 function upvote(item, username) {
   if (item.downvotedBy.includes(username)) {
     item.downvotedBy.splice(item.downvotedBy.indexOf(username), 1);
@@ -349,6 +367,7 @@ function upvote(item, username) {
   return item;
 }
 
+// Downvote an item
 function downvote(item, username) {
   if (item.upvotedBy.includes(username)) {
     item.upvotedBy.splice(item.upvotedBy.indexOf(username), 1);
@@ -357,6 +376,26 @@ function downvote(item, username) {
     item.downvotedBy.push(username);
   }
   return item;
+}
+
+// Load database from './src/utils/_DATA.yml'
+function loadDatabase() {
+  try {
+    return yaml.safeLoad(fs.readFileSync('./src/utils/_DATA.yml', 'utf8'));
+  } catch (err) {
+    console.log("Error:", err);
+  }
+}
+
+// Save database to './src/utils/_DATA.yml'
+function saveDatabase() {
+  try {
+    fs.writeFileSync('./src/utils/_DATA.yml', yaml.safeDump(database, {
+      'sortKeys': true
+    }));
+  } catch (err) {
+    console.log("Error:", err);
+  }
 }
 
 // Write all code above this line.
